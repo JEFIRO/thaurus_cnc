@@ -1,0 +1,269 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "key"
+            },
+            {
+              "name": "id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8b4ec2e3-a8a6-4d02-b29a-908424e24cec",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3a7a7f4-b1d9-41be-ace2-28753edfbff1",
+              "name": "instance",
+              "value": "thaurus_cnc",
+              "type": "string"
+            },
+            {
+              "id": "135d6a50-105a-4127-b6eb-500aa8eb7264",
+              "name": "key",
+              "value": "={{ $json.key }}",
+              "type": "string"
+            },
+            {
+              "id": "10332592-1799-4be0-ab3e-7843bfb70dda",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "7a3d58df-8464-4e8f-a754-4c0c130e6670",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.key }}",
+                    "rightValue": "CREATE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "38ee4c9b-9865-4b32-801c-d6cf4a7cb041"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CREATE"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a2f73e57-aba9-46bb-b689-88a1745b7955",
+                    "leftValue": "={{ $json.key }}",
+                    "rightValue": "UPDATE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "UPDATE"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5e306bdc-098b-4766-9c17-4f201491c546",
+                    "leftValue": "={{ $json.key }}",
+                    "rightValue": "VIEW",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "VIEW"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        528,
+        -16
+      ],
+      "id": "9759767e-64db-4521-8c61-1690541f1872",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Edit Fields').item.json.instance }} {{ $('Edit Fields').item.json.id }} status",
+        "value": "layout_pending"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -128
+      ],
+      "id": "0cae4721-8a06-4fce-b45a-e8b81fc039b8",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "gzPWa7ytbC4Fc6b8",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Edit Fields').item.json.instance }} {{ $('Edit Fields').item.json.id }} status",
+        "value": "layout_ok"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "1433ca49-0f2a-447a-84ef-beb03123f952",
+      "name": "Redis1",
+      "credentials": {
+        "redis": {
+          "id": "gzPWa7ytbC4Fc6b8",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('Edit Fields').item.json.instance }} {{ $('Edit Fields').item.json.id }} status",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        896,
+        144
+      ],
+      "id": "258ad63a-fd65-400c-9d78-211710dfadb5",
+      "name": "Redis2",
+      "credentials": {
+        "redis": {
+          "id": "gzPWa7ytbC4Fc6b8",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c516fd1823bc5e80d0694b352fde632235c76218e28b2c1038fa223a4d1a3505"
+  }
+}

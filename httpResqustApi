@@ -1,0 +1,412 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "action"
+            },
+            {
+              "name": "body"
+            },
+            {
+              "name": "rijId"
+            },
+            {
+              "name": "id_pedido"
+            },
+            {
+              "name": "uuid_interno"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        -224
+      ],
+      "id": "21f0ffea-70c9-48b7-ae67-6473d97721b4",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d21009a-5f99-4747-a023-f6d761d8e124",
+              "name": "action",
+              "value": "={{ $json.action }}",
+              "type": "string"
+            },
+            {
+              "id": "16b0db8d-707a-4059-bd2d-7dbff83f691f",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "string"
+            },
+            {
+              "id": "6cbdcaf9-72d5-4ea4-af32-0e6dec1bd2aa",
+              "name": "id_pedido",
+              "value": "={{ $json.id_pedido }}",
+              "type": "string"
+            },
+            {
+              "id": "17a4be35-3eae-4678-82b1-8f627fdde388",
+              "name": "rijId",
+              "value": "={{ $json.rijId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -224
+      ],
+      "id": "457b606a-0e78-43ee-9572-ba654d9136b0",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -256,
+        176
+      ],
+      "id": "2aaf21cb-ed64-47c7-94df-670a33ff66ae",
+      "name": "Dynamic HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nó 'Code' - Versão Final (Baseada na Documentação)\n\nconst action = $('Code in JavaScript').first().json.action;\n\nconst data = $('Code in JavaScript').first().json.body || {}; \nconst baseUrl = 'http://31.97.165.102:9090';\n\nconst id_pedido = $input.first().json.id_pedido;\nconst id_cliente = $input.first().json.id_cliente;\n\nlet options = {\n  method: '',\n  url: '',\n  body: {}\n};\n\nlet body_final = { ...data };\n\nswitch (action) {\n  \n  case 'buscar_cliente_telefone':\n    options.method = 'GET';\n    options.url = `${baseUrl}/clientes/telefone/${data.telefone}`;\n    break;\n\n  case 'buscar_cliente_id':\n    options.method = 'GET';\n    options.url = `${baseUrl}/clientes/${id_cliente}`;\n    break;\n\n  case 'buscar_cliente_cpf':\n    options.method = 'GET';\n    options.url = `${baseUrl}/clientes/cpf/${data.cpf}`;\n    break;\n    \n  case 'criar_cliente':\n    options.method = 'POST';\n    options.url = `${baseUrl}/clientes`;\n    options.body = data; \n    break;\n\n  case 'atualizar_cliente':\n    options.method = 'PUT';\n    options.url = `${baseUrl}/clientes/${id_cliente}`;\n    delete body_final.id; // Remove o 'id' do corpo, pois já está na URL\n    options.body = body_final; \n    break;\n\n  case 'listar_clientes':\n    options.method = 'GET';\n    options.url = `${baseUrl}/clientes`;\n    break;\n\n  // --- AÇÕES DE PEDIDOS (6) ---\n  case 'criar_pedido_novo_cliente': // Doc: Pedidos #1 (POST /pedidos)\n    options.method = 'POST';\n    options.url = `${baseUrl}/pedidos`;\n    options.body = data; // Envia o objeto NewPedido completo\n    break;\n\n  case 'criar_pedido_cliente_existente': // Doc: Pedidos #2 (POST /pedidos/{id_cliente})\n    options.method = 'POST';\n    options.url = `${baseUrl}/pedidos/${id_pedido}`;\n    delete body_final.id_cliente; // Remove o 'id_cliente' do corpo\n    options.body = body_final; // Envia a List<PedidoDTO>\n    break;\n    \n  case 'buscar_pedido': // Doc: Pedidos #4\n    options.method = 'GET';\n    options.url = `${baseUrl}/pedidos/${id_pedido}`;\n    break;\n\n  case 'listar_pedidos': // Doc: Pedidos #3\n    options.method = 'GET';\n    options.url = `${baseUrl}/pedidos`;\n    break;\n    \n  case 'atualizar_pedido': // Doc: Pedidos #5 (PUT /pedidos/{id})\n    options.method = 'PUT';\n    options.url = `${baseUrl}/pedidos/${id_pedido}`;\n    delete body_final.id; // Remove o 'id' do corpo\n    options.body = body_final; // Envia a List<PedidoDTO>\n    break;\n\n  case 'deletar_pedido': // Doc: Pedidos #6\n    options.method = 'DELETE';\n    options.url = `${baseUrl}/pedidos/${id_pedido}}`;\n    break;\n\n  default:\n    throw new Error(`Ação desconhecida: ${action}`);\n}\n\n// Retorna o objeto 'options' para o nó HTTP Request\nreturn options;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -32
+      ],
+      "id": "8e2f6a8e-2aa9-4ade-85be-03c706a145ad",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\n\n// Parse do body JSON\nconst bodyString = item.json.body;\nconst parsedBody = JSON.parse(bodyString);\n\n// Gera UUID interno\nconst uuidInterno = new Date().toISOString() + '-' + Math.random().toString(36).substring(2, 10);\n\n// Adiciona uuidInterno ao item e atualiza o body\nitem.json.uuid_interno = uuidInterno;\nitem.json.body = parsedBody;\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -32
+      ],
+      "id": "70c9cecd-9656-4ee6-8896-25ca352f5726",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "IsDq2JPX5X0boorW",
+          "mode": "list",
+          "cachedResultName": "ThaurusCNC_api",
+          "cachedResultUrl": "/projects/RIPgsdgTD7DJ2B4c/datatables/IsDq2JPX5X0boorW"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid_interno",
+              "keyValue": "={{ $('Code in JavaScript').item.json.uuid_interno }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_pedido": "={{ $json.id }}",
+            "id_cliente": "={{ $json.cliente.telefone }}",
+            "id_produto": "={{ $json.itens[0].id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_pedido",
+              "displayName": "id_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "id_produto",
+              "displayName": "id_produto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "id_cliente",
+              "displayName": "id_cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "rijId",
+              "displayName": "rijId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "uuid_interno",
+              "displayName": "uuid_interno",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        176
+      ],
+      "id": "8c1dad84-8a57-4239-b1b4-6dc7d6531c83",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "IsDq2JPX5X0boorW",
+          "mode": "list",
+          "cachedResultName": "ThaurusCNC_api",
+          "cachedResultUrl": "/projects/RIPgsdgTD7DJ2B4c/datatables/IsDq2JPX5X0boorW"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "rijId": "={{ $('Edit Fields1').item.json.rijId }}",
+            "status": "aberto",
+            "uuid_interno": "={{ $json.uuid_interno }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_pedido",
+              "displayName": "id_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "id_produto",
+              "displayName": "id_produto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "id_cliente",
+              "displayName": "id_cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "rijId",
+              "displayName": "rijId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid_interno",
+              "displayName": "uuid_interno",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -32
+      ],
+      "id": "ca178f0e-83e7-4f82-a6b2-ede5bed6ee24",
+      "name": "Insert Pedido em Aberto",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      uuid_interno: $input.first().json.uuid_interno,\n      id_pedido: $input.first().json.id_pedido,\n      status: $input.first().json.status\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        176
+      ],
+      "id": "3553674a-be42-458d-8d6f-be172ef9c482",
+      "name": "Code in JavaScript2"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dynamic HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Dynamic HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Insert Pedido em Aberto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Pedido em Aberto": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c516fd1823bc5e80d0694b352fde632235c76218e28b2c1038fa223a4d1a3505"
+  }
+}

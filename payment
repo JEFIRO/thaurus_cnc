@@ -1,0 +1,455 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "preco",
+              "type": "number"
+            },
+            {
+              "name": "description"
+            },
+            {
+              "name": "id"
+            },
+            {
+              "name": "quantidade",
+              "type": "number"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "id_pedido"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "6daa200f-50f1-46bc-baff-8dd0e891482b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3c0d28b-2817-4e56-9a9b-e2b48a30550b",
+              "name": "preco",
+              "value": "={{ $json.preco }}",
+              "type": "string"
+            },
+            {
+              "id": "be1a1280-a987-4c3c-8e32-6678ed0a74df",
+              "name": "description",
+              "value": "=meu propio pecado",
+              "type": "string"
+            },
+            {
+              "id": "9c612a62-d97b-49cc-b47b-5371c0fbdbb7",
+              "name": "id",
+              "value": "=5575991449831@s.whatsapp.net\n",
+              "type": "string"
+            },
+            {
+              "id": "6eddfd6e-dd97-47ee-a7b6-6fa149c950e9",
+              "name": "quantidade",
+              "value": "=1",
+              "type": "string"
+            },
+            {
+              "id": "ae9a769c-dcfd-448f-a024-03851aa7d5a3",
+              "name": "email",
+              "value": "=jefiroo@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "d77ef443-3173-481c-9a1e-b04f3dd433f7",
+              "name": "id_pedido",
+              "value": "=6",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        0
+      ],
+      "id": "989795bc-4bd8-4e28-bf15-bb67d75a9474",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.email }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "cd7dd3d7-e7be-4601-adc4-d2cc4c0833a0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "salvar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        592,
+        0
+      ],
+      "id": "d8ee37be-2584-40df-af53-30f7be9ef5bb",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega todos os itens que chegam no nó\nconst items = $input.all();\nconst resultadosFinais = [];\n\n// Loop para processar cada item individualmente\nfor (const item of items) {\n  // Pega o ID do item atual\n   let numero = item.json.id;\n\n  // Remove tudo depois do @\n  numero = numero.split('@')[0];\n\n  // Remove o DDI 55 apenas se estiver no começo\n  if (numero.startsWith(\"55\")) {\n    numero = numero.slice(2);\n  }\n\n\n  // Adiciona o campo 'id_limpo' ao JSON do item\n  item.json.id_limpo = numero;\n  \n  // Adiciona o item modificado à lista de resultados\n  resultadosFinais.push(item);\n}\n\n// Retorna a lista completa de itens processados\nreturn resultadosFinais;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        0
+      ],
+      "id": "3d607a8e-0683-4d13-8910-d75c81b5fbe2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://31.97.165.102:9090/clientes/{{ $json.id }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $('Code in JavaScript').item.json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        -288
+      ],
+      "id": "14497a1f-fc0d-4d91-aad5-2fd7d53acd29",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "url": "=http://31.97.165.102:9090/pedidos/1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "8bf97294-a891-4bf2-9666-5b7c544480b8",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.infinitepay.io/invoices/public/checkout/links",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"handle\": \"thauruscnc\",\n  \"redirect_url\": \"https://thauruscnc-n8n.eaou4y.easypanel.host\",\n  \"webhook_url\": \"https://thauruscnc-n8n.eaou4y.easypanel.host/webhook/963315d4-d08c-4fce-b9b1-4b94b597c343\",\n  \"order_nsu\": \"{{ $json.id }}\",\n  \"items\": [\n    {\n      \"quantity\":{{ $('Edit Fields').item.json.quantidade }} ,\n      \"price\": {{ $json.valorTotal }}00,\n      \"description\": \"{{ $('Edit Fields').item.json.description }}\"\n    }\n  ]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        0
+      ],
+      "id": "a0faf530-a498-4c7c-92c1-fcc3e5b59ef6",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const valor = Number(item.json.valor) || 0;\n  const frete = Number(item.json.frete) || 0;\n\n  // Soma e garante duas casas decimais, mantendo número\n  item.json.valorTotal = Number((valor + frete).toFixed(2));\n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        0
+      ],
+      "id": "5249716f-a565-415e-b52c-d6fe734b3a7d",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1baf9415-7f32-4a02-bd7f-52c45e56f311",
+              "leftValue": "={{ $json.cliente.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        -272
+      ],
+      "id": "6c26aa3b-be87-46ab-9fc9-8d7a734af7b9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f88f6d2b-4d7d-4f5d-b325-7e0f20874e42",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "2c914b30-c924-4efc-97ab-a92bbf565b49",
+              "name": "cliente.nome",
+              "value": "={{ $('HTTP Request2').item.json.cliente.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "1bc60580-d283-4256-96cf-679846b08ce9",
+              "name": "id",
+              "value": "={{ $('HTTP Request2').item.json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "8c718a73-dfce-4754-8750-fed14a2b6dd6",
+              "name": "descrição",
+              "value": "=Seu pedido thaurus_cnc",
+              "type": "string"
+            },
+            {
+              "id": "b8e45f56-2290-4039-922f-1798f65f2973",
+              "name": "valor",
+              "value": "={{ $('HTTP Request2').item.json.valor }}",
+              "type": "number"
+            },
+            {
+              "id": "3bc1f178-7af8-48b2-87da-3084122c0478",
+              "name": "email",
+              "value": "={{ $('Edit Fields').item.json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        0
+      ],
+      "id": "0e515dc8-f309-4428-a9b3-a0ca8dacfe52",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Seu pedido Thauru's CNC está pronto para pagamento",
+        "message": "=<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Solicitação de Pagamento - Thauru's CNC</title>\n    <style>\n        /* Estilos básicos */\n        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }\n        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }\n        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; display: block; margin: 0 auto; max-width: 100%; max-height: 200px; }\n        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #f4f4f4; font-family: Arial, sans-serif; }\n    </style>\n</head>\n<body>\n\n    <div style=\"display: none; font-size: 1px; color: #fefefe; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;\">\n        Seu pedido na Thauru's CNC está pronto para pagamento.\n    </div>\n\n    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n        <tr>\n            <td align=\"center\" style=\"padding: 20px 0;\">\n                \n                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" style=\"width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);\">\n\n                    <tr>\n                        <td align=\"center\" style=\"padding: 30px 20px 20px 20px;\">\n                            <a href=\"https://seusite.com.br\" target=\"_blank\">\n                                <img src=\"https://drive.google.com/uc?export=view&id=1BK6twxCDf0fs1csXnp5yQl0xSBIFguPR\" \n                                     alt=\"Thauru's CNC - Design e Personalizados\">\n                            </a>\n                        </td>\n                    </tr>\n\n                    <tr>\n                        <td align=\"left\" style=\"padding: 20px 40px 30px 40px; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333333;\">\n                            \n                            <h1 style=\"font-size: 24px; font-weight: bold; margin: 0 0 20px 0; color: #222222;\">Olá, {{ $json.cliente.nome }}!</h1>\n                            \n                            <p style=\"margin-bottom: 25px;\">Obrigado por escolher a <strong>Thauru's CNC</strong> para o seu projeto.</p>\n                            \n                            <p style=\"margin-bottom: 10px;\">Seu pedido está pronto e aguardando o pagamento para darmos continuidade. Você pode revisar os detalhes abaixo e concluir a compra através do botão.</p>\n\n                            <table border=\"0\" cellpadding=\"10\" cellspacing=\"0\" width=\"100%\" style=\"border: 1px solid #eeeeee; border-radius: 5px; margin: 25px 0;\">\n                                <tr>\n                                    <td style=\"font-family: Arial, sans-serif; font-size: 14px; background-color: #f9f9f9; width: 150px;\"><strong>Pedido Nº:{{ $json.id }}</strong></td>\n                                    <td style=\"font-family: Arial, sans-serif; font-size: 14px;\">{{ $json.id }}</td>\n                                </tr>\n                                <tr>\n                                    <td style=\"font-family: Arial, sans-serif; font-size: 14px; background-color: #f9f9f9;\"><strong>Descrição:</strong></td>\n                                    <td style=\"font-family: Arial, sans-serif; font-size: 14px;\">{{ $json['descrição'] }}</td>\n                                </tr>\n                                <tr>\n                                    <td style=\"font-family: Arial, sans-serif; font-size: 16px; background-color: #f9f9f9;\"><strong>Valor Total:</strong></td>\n                                    <td style=\"font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; color: #111111;\">R$ {{ $('Code in JavaScript1').item.json.valorTotal }}</td>\n                                </tr>\n                            </table>\n\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" align=\"center\" style=\"margin-top: 30px; margin-bottom: 30px;\">\n                                <tr>\n                                    <td align=\"center\" bgcolor=\"#333333\" style=\"border-radius: 5px;\">\n                                        <a href=\"{{ $json.url }}\" target=\"_blank\" style=\"font-size: 18px; font-family: Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 5px; display: inline-block; font-weight: bold;\">\n                                            &nbsp;&nbsp;&nbsp;Pagar Agora&nbsp;&nbsp;&nbsp;\n                                        </a>\n                                    </td>\n                                </tr>\n                            </table>\n\n                            <p style=\"font-size: 14px; margin-top: 25px;\">Se o botão não funcionar, copie e cole o link abaixo no seu navegador:</p>\n                            <p style=\"font-size: 12px; color: #555555; word-break: break-all;\">{{ $json.url }}</p>\n\n                            <p style=\"margin-top: 30px;\">Qualquer dúvida, estamos à disposição.</p>\n                            <p style=\"margin-top: 5px;\">Atenciosamente,<br>Equipe Thauru's CNC</p>\n                        </td>\n                    </tr>\n\n                    <tr>\n                        <td align=\"center\" style=\"padding: 30px 20px; font-family: Arial, sans-serif; font-size: 12px; color: #888888; border-top: 1px solid #eeeeee;\">\n                            <p style=\"margin: 0;\">© 2025 Thauru's CNC - Design e Personalizados</p>\n                            <p style=\"margin: 5px 0 0 0;\">[Seu Endereço ou CNPJ, se necessário]</p>\n                        </td>\n                    </tr>\n\n                </table>\n            </td>\n        </tr>\n    </table>\n\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2752,
+        0
+      ],
+      "id": "0cdcc23f-c7de-44ce-94ea-6bfce41f0362",
+      "name": "Send a message",
+      "webhookId": "8aac9e51-8f66-415d-b1e9-f19f80ef3ce1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5NSh6FbiOH0jYPp7",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "preco": null,
+        "description": null,
+        "id": null,
+        "quantidade": null,
+        "email": null,
+        "id_pedido": null
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c516fd1823bc5e80d0694b352fde632235c76218e28b2c1038fa223a4d1a3505"
+  }
+}
